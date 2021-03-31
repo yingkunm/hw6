@@ -96,10 +96,10 @@ def construct_unique_key(baseurl, params):
     string
         the unique key as a string
     '''
-    qs=""
+    qs = baseurl
     for i in params:
-        qs = qs + i + "=" + params[i] + "_"
-    unique_key = baseurl + "_" + qs
+        qs = qs + "_" + i + "_" + params[i]
+    unique_key = str(qs)
     return unique_key
 
 
@@ -124,7 +124,6 @@ def make_request(baseurl, params):
     for i in params:
         qs = qs + i + "=" + params[i] + "&"
     url = baseurl + "?" + qs
-    print(url)
     response = requests.get(url, auth=oauth)
     DataDict = json.loads(response.text)
     return DataDict
@@ -163,16 +162,20 @@ def make_request_with_cache(baseurl, hashtag, count):
     CACHE_DICT = open_cache()
     unique_key = construct_unique_key(baseurl, params)
 
-    try:
-        resultList = CACHE_DICT[unique_key]["statuses"]
-        for i in resultList:
-            for j in i["entities"]["hashtags"]:
-                if(hashtag[1:].lower() == j["text"].lower()):
-                    print("fetching cached data")
-                    break
+    if(unique_key in CACHE_DICT.keys()):
+        print("fetching cached data")
         return CACHE_DICT[unique_key]
+        # resultList = CACHE_DICT[unique_key]["statuses"]
+        # for i in resultList:
+        #     for j in i["entities"]["hashtags"]:
+        #         if(hashtag[1:].lower() == j["text"].lower()):
+        #             find = 1
+        #             break
+        # if find == 1:
+        #     print("fetching cached data")
+        # return CACHE_DICT[unique_key]
 
-    except:
+    else:
         CACHE_DICT[unique_key] = {}
         DataDict = make_request(baseurl, params)
         CACHE_DICT[unique_key] =  DataDict
